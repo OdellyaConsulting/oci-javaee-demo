@@ -1,0 +1,129 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.odellya.oci.demo</groupId>
+    <artifactId>oci-javaee-demo-ejb</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>ejb</packaging>
+    <name>OCI Java EE Application EJB Module (DEMO)</name>
+    <description>Ce module contient les services EJB pour l'application Java EE d'OCI</description>
+  
+    <parent>
+         <groupId>com.odellya.oci</groupId>
+         <artifactId>oci-maven-root-pom</artifactId>
+         <version>1.0</version>
+         <relativePath>../fake_path</relativePath>
+    </parent>
+    
+    <properties>
+        <!-- JBOSS_HOME We'll unpack into here -->
+        <JBOSS_HOME>${project.build.directory}/jboss-6.1.0.Final</JBOSS_HOME>
+    </properties>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>oci-javaee-demo-domain</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.container</groupId>
+            <artifactId>arquillian-jbossas-embedded-6</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian</groupId>
+            <artifactId>arquillian-bom</artifactId>
+            <version>1.1.1.Final</version>
+            <scope>import</scope>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-container</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.jbossas</groupId>
+            <artifactId>jboss-as-depchain</artifactId>
+            <version>6.1.0.Final</version>
+            <type>pom</type>
+        </dependency>
+    </dependencies>
+    
+    <!--
+    We also need to place the AS depchain into
+    the "dependencyManagement" section in import scope
+    so that Maven respects the "exclusion" elements
+    configured
+    -->
+    <dependencyManagement>
+        <dependencies>
+
+            <!-- org.jboss.jbossas -->
+            <dependency>
+                <groupId>org.jboss.jbossas</groupId>
+                <artifactId>jboss-as-depchain</artifactId>
+                <version>6.1.0.Final</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+
+    </dependencyManagement>
+    
+    <build>
+        <plugins>           
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack</id>
+                        <phase>validate</phase>
+                        <!-- So run before testing -->
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.jboss.jbossas</groupId>
+                                    <artifactId>jboss-as-distribution</artifactId>
+                                    <version>6.1.0.Final</version>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>${JBOSS_HOME}/client/jbossws-native-client.jar
+                        </additionalClasspathElement>
+                        <additionalClasspathElement>${JBOSS_HOME}/server/default/deploy/jbossweb.sar
+                        </additionalClasspathElement>
+                    </additionalClasspathElements>
+                    <trimStackTrace>false</trimStackTrace>
+                    <printSummary>true</printSummary>
+                    <!-- Caution: no linebreak here !-->
+                    <argLine>-Xmx512m -XX:MaxPermSize=256m -Djava.net.preferIPv4Stack=true -Djava.util.logging.manager=org.jboss.logmanager.LogManager  -Djava.endorsed.dirs="${JBOSS_HOME}/lib/endorsed" -Djboss.home="${JBOSS_HOME}"  -Djboss.boot.server.log.dir="${JBOSS_HOME}" -Dorg.jboss.reflect.spi.TypeInfoFactory=org.jboss.reflect.plugins.introspection.IntrospectionTypeInfoFactory</argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
